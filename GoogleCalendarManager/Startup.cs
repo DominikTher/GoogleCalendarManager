@@ -48,7 +48,10 @@ namespace GoogleCalendarManager
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                 })
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options => {
+                    options.Cookie.IsEssential = true;
+                    options.Cookie.MaxAge = TimeSpan.FromMinutes(15);
+                })
                 .AddGoogle(
                     GoogleDefaults.AuthenticationScheme,
                     GoogleDefaults.DisplayName,
