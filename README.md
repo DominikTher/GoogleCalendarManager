@@ -1,4 +1,4 @@
-#Google Calendar Manager
+# Google Calendar Manager
 Just playground
 
 Testing Google Calendar API
