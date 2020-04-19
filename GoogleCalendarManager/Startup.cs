@@ -10,6 +10,12 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Google.Apis.Calendar.v3;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System;
+using System.Linq;
 
 namespace GoogleCalendarManager
 {
@@ -30,14 +36,15 @@ namespace GoogleCalendarManager
                 .AddRazorPages()
                 .AddMvcOptions(setup => setup.Filters.Add(new AuthorizeFilter()));
             services.AddServerSideBlazor();
-            services.AddHttpContextAccessor();
             services.AddScoped<CalendarManagerService>();
-            services.Configure<CalendarManagerOptions>(options => { 
+            services.Configure<CalendarManagerOptions>(options =>
+            {
                 options.EventsSummaryForDeletion = Configuration.GetSection("EventsSummaryForDeletion").Get<IEnumerable<string>>();
             });
             services.AddSingleton(service => service.GetRequiredService<IOptions<CalendarManagerOptions>>().Value);
             services
-                .AddAuthentication(options => {
+                .AddAuthentication(options =>
+                {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                 })
@@ -51,6 +58,16 @@ namespace GoogleCalendarManager
                         options.ClientSecret = Configuration["ClientSecret"];
                         options.Scope.Add(CalendarService.Scope.CalendarEvents);
                         options.SaveTokens = true;
+
+                        options.Events = new OAuthEvents
+                        {
+                            OnCreatingTicket = ctx =>
+                            {
+                                ctx.Identity.AddClaim(new Claim("access_token", ctx.AccessToken));
+
+                                return Task.CompletedTask;
+                            }
+                        };
                     });
         }
 

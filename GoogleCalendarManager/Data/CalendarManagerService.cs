@@ -4,6 +4,7 @@ using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
 using GoogleCalendarManager.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,13 @@ namespace GoogleCalendarManager.Data
 {
     public class CalendarManagerService
     {
-        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IEnumerable<string> eventsSummaryForDeletion;
+        private readonly AuthenticationStateProvider authenticationStateProvider;
 
-        public CalendarManagerService(IHttpContextAccessor httpContextAccessor, CalendarManagerOptions calendarManagerOptions)
+        public CalendarManagerService(AuthenticationStateProvider authenticationStateProvider, CalendarManagerOptions calendarManagerOptions)
         {
-            this.httpContextAccessor = httpContextAccessor;
             eventsSummaryForDeletion = calendarManagerOptions.EventsSummaryForDeletion;
+            this.authenticationStateProvider = authenticationStateProvider;
         }
 
         public async Task<IEnumerable<CalendarEvent>> GetTodayUpcomingEvents()
@@ -104,7 +105,8 @@ namespace GoogleCalendarManager.Data
 
         private async Task<CalendarService> GetCalendarService()
         {
-            var token = await httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+            var authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            var token = authenticationState.User.Claims.FirstOrDefault(claim => claim.Type == "access_token").Value;
 
             var service = new CalendarService(new BaseClientService.Initializer()
             {
