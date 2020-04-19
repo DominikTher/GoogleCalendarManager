@@ -1,0 +1,45 @@
+﻿@page "/today"
+
+@using GoogleCalendarManager.Data
+@using Models
+@inject CalendarManagerService CalendarService
+
+<h1>Calendar</h1>
+
+<h2>Today upcoming events</h2>
+
+@if (todayUpcomingEvents == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Start</th>
+                <th>End</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var todayUpcomingEvent in todayUpcomingEvents)
+            {
+                <tr>
+                    <td>@todayUpcomingEvent.Summary</td>
+                    <td>@todayUpcomingEvent.Start</td>
+                    <td>@todayUpcomingEvent.End</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<CalendarEvent> todayUpcomingEvents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        todayUpcomingEvents = await CalendarService.GetTodayUpcomingEvents();
+    }
+}

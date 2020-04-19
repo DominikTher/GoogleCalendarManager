@@ -1,0 +1,55 @@
+﻿@page "/past"
+
+@using Models
+@using GoogleCalendarManager.Data
+@inject CalendarManagerService CalendarService
+
+<h1>Calendar</h1>
+
+<h2>Past 30 days</h2>
+
+@if (pastEvents == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Start</th>
+                <th>End</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pastEvent in pastEvents)
+            {
+            <tr>
+                <td>@pastEvent.Summary</td>
+                <td>@pastEvent.Start</td>
+                <td>@pastEvent.End</td>
+                <td>
+                    <button class="btn btn-danger" @onclick="eventArgs => Delete(pastEvent.Id)">Delete</button>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<CalendarEvent> pastEvents;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pastEvents = await CalendarService.GetPastEvenets(30);
+    }
+
+    private async Task Delete(string eventId)
+    {
+        await CalendarService.DeleteEvenet(eventId);
+        pastEvents = await CalendarService.GetPastEvenets(30);
+    }
+}
